@@ -3,7 +3,7 @@
 Utilizing your Threat data from a MISP instance into CarbonBlack Response by exposing the data in the Threat Intelligence Feed.
 
 Read more on eCrimeLabs Blog post:
-
+https://www.ecrimelabs.com/blog/2019/6/4/encriching-carbonblack-response-with-threat-data-from-misp
 
 The following data types from MISP is exported into the feed
 - ip-src
