@@ -1,4 +1,4 @@
-# MISP2CBR
+# MISP Threat Feed into CarbonBlack Response
 
 Utilizing your Threat data from a MISP instance into CarbonBlack Response by exposing the data in the Threat Intelligence Feed.
 
