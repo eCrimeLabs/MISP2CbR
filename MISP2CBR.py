@@ -78,10 +78,13 @@ def GetMISPData():
     body = {
         "returnFormat":"json",
         "type":["ip-src","ip-dst","domain","hostname","md5","sha256"],
-        "tags":misp_tag,
         "enforceWarninglist":"true",
         "to_ids":"true"
     }
+    
+    if misp_tag:
+        body["tags"] = misp_tag
+    
     misp = PyMISP(misp_url, misp_key, misp_verifycert)
     data = misp.direct_call(relative_path, body)
 
