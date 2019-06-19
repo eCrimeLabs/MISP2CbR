@@ -32,8 +32,8 @@ import time
 import hashlib
 import socket
 import re
-from keys import misp_url, misp_key, misp_verifycert, misp_tag, proxies, flask_cert, flask_key, app_debug
-from flask import Flask, Response
+from keys import misp_url, misp_verifycert, misp_tag, proxies, flask_cert, flask_key, app_debug
+from flask import Flask, Response, request
 app = Flask(__name__)
 
 __author__ = "Dennis Rand - eCrimeLabs"
@@ -72,7 +72,7 @@ def splash():
 def init(misp_url, misp_key):
     return PyMISP(misp_url, misp_key, misp_verifycert, 'json', debug=False, proxies=proxies)
 
-def GetMISPData():
+def GetMISPData(misp_key):
     reports = {}
     relative_path = 'attributes/restSearch'
     body = {
@@ -143,8 +143,12 @@ def Build_CB_Feed(iocs_dns, iocs_ipv4, iocs_ipv6, iocs_md5, iocs_sha256):
 
 @app.route("/")
 def fetch_and_deliver():
-    feed = GetMISPData()
-    return Response(json.dumps(feed), mimetype='application/json')
+    misp_key = request.args.get('key', default=None, type=str)
+    if not misp_key:
+        return "Please use your MISP authentication key in the GET request to authenticate, ex. wget -k https://mymisp:8443?key=myauthenticationkey."
+    else:
+        feed = GetMISPData(misp_key)
+        return Response(json.dumps(feed), mimetype='application/json')
 
 
 
