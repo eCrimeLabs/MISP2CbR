@@ -37,8 +37,8 @@ from flask import Flask, Response
 app = Flask(__name__)
 
 __author__ = "Dennis Rand - eCrimeLabs"
-__copyright__ = "Copyright (c) 2019, eCrimeLabs"
-__version__ = "1.0.0"
+__copyright__ = "Copyright (c) 2022, eCrimeLabs"
+__version__ = "1.0.1"
 __maintainer__ = "Dennis Rand"
 
 def is_valid_ipv4_address(address):
@@ -65,12 +65,9 @@ def is_valid_ipv6_address(address):
 def splash():
     print ("\r\n")
     print ('Expose MISP attributes to CarbonBlack Response')
-    print ('(c)2019 eCrimeLabs')
+    print ('(c)2022 eCrimeLabs')
     print ('https://www.ecrimelabs.com')
     print ("----------------------------------------\r\n")
-
-def init(misp_url, misp_key):
-    return PyMISP(misp_url, misp_key, misp_verifycert, 'json', debug=False, proxies=proxies)
 
 def GetMISPData():
     reports = {}
@@ -84,23 +81,31 @@ def GetMISPData():
     }
     misp = PyMISP(misp_url, misp_key, misp_verifycert)
     data = misp.direct_call(relative_path, body)
-
     iocs_dns, iocs_ipv4, iocs_ipv6, iocs_md5, iocs_sha256 = [],[],[],[],[]
 
-    for e in data['response']['Attribute']:
-        if (e['type'] == 'domain' or e['type'] == 'hostname'):
-            iocs_dns.append(e['value'])
-        elif (e['type'] == 'ip-src' or e['type'] == 'ip-dst'):
-            if (is_valid_ipv4_address(e['value'])):
-                iocs_ipv4.append(e['value'])
-            if (is_valid_ipv6_address(e['value'])):
-                iocs_ipv6.append(e['value'])
-        elif (e['type'] == 'md5'):
-            if re.search("([a-f0-9][32,32])", e['value'], re.IGNORECASE | re.MULTILINE):
-                iocs_md5.append(e['value'])
-        elif (e['type'] == 'sha256'):
-            if re.search("([a-f0-9][64,64])", e['value'], re.IGNORECASE | re.MULTILINE):
-                iocs_sha256.append(e['value'])
+    try:
+        data_blob = data['Attribute']
+    except:
+        print (" - Error in communication with MISP")
+        sys.exit(1)
+
+    for e in data['Attribute']:
+        try:
+            if (e['type'] == 'domain' or e['type'] == 'hostname'):
+                iocs_dns.append(e['value'])
+            elif (e['type'] == 'ip-src' or e['type'] == 'ip-dst'):
+                if (is_valid_ipv4_address(e['value'])):
+                    iocs_ipv4.append(e['value'])
+                if (is_valid_ipv6_address(e['value'])):
+                    iocs_ipv6.append(e['value'])
+            elif (e['type'] == 'md5'):
+                if re.search("([a-f0-9][32,32])", e['value'], re.IGNORECASE | re.MULTILINE):
+                    iocs_md5.append(e['value'])
+            elif (e['type'] == 'sha256'):
+                if re.search("([a-f0-9][64,64])", e['value'], re.IGNORECASE | re.MULTILINE):
+                    iocs_sha256.append(e['value'])
+        except:
+            pass
 
     return(Build_CB_Feed(iocs_dns, iocs_ipv4, iocs_ipv6, iocs_md5, iocs_sha256))
 
